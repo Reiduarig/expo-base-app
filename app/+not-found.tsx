@@ -17,7 +17,7 @@ export default function NotFoundScreen() {
         </ThemedText>
         <TouchableOpacity 
           style={styles.button}
-          onPress={() => router.push('/(tabs)/index')}
+          onPress={() => router.push('/(tabs)/home')}
         >
           <ThemedText style={styles.buttonText}>
             Volver al inicio
