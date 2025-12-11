@@ -1,12 +1,16 @@
 import { Loading } from '@/components/loading';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Colors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { validateLoginForm, validateRegisterForm, validators } from '@/utils/validators';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -130,60 +134,41 @@ export default function LoginScreen() {
           </ThemedText>
 
           {isRegisterMode && (
-            <>
-              <TextInput
-                style={[
-                  styles.input, 
-                  { backgroundColor, color: textColor, borderColor },
-                  errors.name && styles.inputError
-                ]}
-                placeholder="Nombre completo"
-                placeholderTextColor={borderColor}
-                value={name}
-                onChangeText={handleNameChange}
-                autoCapitalize="words"
-              />
-              {errors.name && (
-                <ThemedText style={styles.errorText}>⚠️ {errors.name}</ThemedText>
-              )}
-            </>
+            <Input
+              label="Nombre completo"
+              placeholder="Tu nombre"
+              value={name}
+              onChangeText={handleNameChange}
+              error={errors.name}
+              autoCapitalize="words"
+              leftIcon={<Ionicons name="person-outline" size={20} color={textColor} />}
+            />
           )}
 
-          <TextInput
-            style={[
-              styles.input, 
-              { backgroundColor, color: textColor, borderColor },
-              errors.email && styles.inputError
-            ]}
-            placeholder="Email"
-            placeholderTextColor={borderColor}
+          <Input
+            label="Email"
+            placeholder="tu@email.com"
             value={email}
             onChangeText={handleEmailChange}
+            error={errors.email}
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
+            leftIcon={<Ionicons name="mail-outline" size={20} color={textColor} />}
           />
-          {errors.email && (
-            <ThemedText style={styles.errorText}>⚠️ {errors.email}</ThemedText>
-          )}
 
-          <TextInput
-            style={[
-              styles.input, 
-              { backgroundColor, color: textColor, borderColor },
-              errors.password && styles.inputError
-            ]}
-            placeholder="Contraseña"
-            placeholderTextColor={borderColor}
+          <Input
+            label="Contraseña"
+            placeholder="••••••••"
             value={password}
             onChangeText={handlePasswordChange}
+            error={errors.password}
             secureTextEntry
             autoCapitalize="none"
             autoComplete="password"
+            leftIcon={<Ionicons name="lock-closed-outline" size={20} color={textColor} />}
+            helperText={isRegisterMode ? "Mínimo 8 caracteres con mayúsculas, minúsculas y números" : undefined}
           />
-          {errors.password && (
-            <ThemedText style={styles.errorText}>⚠️ {errors.password}</ThemedText>
-          )}
           
           {/* Indicador de fortaleza de contraseña */}
           {isRegisterMode && password.length > 0 && (
@@ -191,9 +176,9 @@ export default function LoginScreen() {
               <ThemedText style={styles.strengthLabel}>Fortaleza: </ThemedText>
               <ThemedText style={[
                 styles.strengthText,
-                passwordStrength === 'weak' && styles.strengthWeak,
-                passwordStrength === 'medium' && styles.strengthMedium,
-                passwordStrength === 'strong' && styles.strengthStrong,
+                passwordStrength === 'weak' && { color: Colors.light.error },
+                passwordStrength === 'medium' && { color: Colors.light.warning },
+                passwordStrength === 'strong' && { color: Colors.light.success },
               ]}>
                 {passwordStrength === 'weak' && '🔴 Débil'}
                 {passwordStrength === 'medium' && '🟡 Media'}
@@ -202,26 +187,25 @@ export default function LoginScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: tintColor }]}
+          <Button
+            title={isRegisterMode ? 'Registrarse' : 'Iniciar sesión'}
             onPress={handleSubmit}
+            loading={isSubmitting}
             disabled={isSubmitting}
-          >
-            <ThemedText style={styles.buttonText}>
-              {isRegisterMode ? 'Registrarse' : 'Iniciar sesión'}
-            </ThemedText>
-          </TouchableOpacity>
+            variant="primary"
+            size="lg"
+            fullWidth
+            style={{ marginTop: Spacing.md }}
+          />
 
-          <TouchableOpacity
-            style={styles.linkButton}
+          <Button
+            title={isRegisterMode ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
             onPress={toggleMode}
-          >
-            <ThemedText style={styles.linkText}>
-              {isRegisterMode 
-                ? '¿Ya tienes cuenta? Inicia sesión' 
-                : '¿No tienes cuenta? Regístrate'}
-            </ThemedText>
-          </TouchableOpacity>
+            variant="ghost"
+            size="md"
+            fullWidth
+            style={{ marginTop: Spacing.sm }}
+          />
 
           <ThemedText style={styles.demoText}>
             💡 Demo: email válido y contraseña con 8+ caracteres, mayúsculas, minúsculas, números
@@ -243,7 +227,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: Spacing.lg,
     maxWidth: 400,
     width: '100%',
     alignSelf: 'center',
@@ -251,38 +235,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     opacity: 0.7,
-    marginBottom: 32,
+    marginBottom: Spacing.xl,
     textAlign: 'center',
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 4,
-    fontSize: 16,
-  },
-  inputError: {
-    borderColor: '#dc3545',
-    borderWidth: 2,
-  },
-  errorText: {
-    color: '#dc3545',
-    fontSize: 12,
-    marginBottom: 12,
-    marginLeft: 4,
   },
   strengthContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    marginLeft: 4,
+    marginBottom: Spacing.md,
+    marginLeft: Spacing.xs,
   },
   strengthLabel: {
     fontSize: 12,
@@ -292,40 +258,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  strengthWeak: {
-    color: '#dc3545',
-  },
-  strengthMedium: {
-    color: '#ffc107',
-  },
-  strengthStrong: {
-    color: '#28a745',
-  },
-  button: {
-    height: 50,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  linkText: {
-    fontSize: 14,
-    textDecorationLine: 'underline',
-    opacity: 0.8,
-  },
   demoText: {
     fontSize: 12,
     opacity: 0.6,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: Spacing.lg,
   },
 });

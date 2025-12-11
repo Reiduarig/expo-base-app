@@ -1,6 +1,8 @@
 import { Loading } from '@/components/loading';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Avatar, Button, Card, Divider } from '@/components/ui';
+import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/auth-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -16,8 +18,7 @@ export default function ProfileScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
-  const cardBackground = useThemeColor({ light: '#f8f9fa', dark: '#1c1c1e' }, 'background');
-  const borderColor = useThemeColor({ light: '#e0e0e0', dark: '#3a3a3c' }, 'text');
+  const borderColor = useThemeColor({}, 'border');
 
   const handleLogout = () => {
     Alert.alert(
@@ -32,7 +33,7 @@ export default function ProfileScreen() {
             try {
               await logout();
               router.replace('/login');
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'No se pudo cerrar sesión');
             }
           },
@@ -74,26 +75,27 @@ export default function ProfileScreen() {
     <ScrollView style={[styles.container, { backgroundColor }]}>
       <ThemedView style={styles.content}>
         {/* Header con avatar */}
-        <ThemedView style={[styles.header, { backgroundColor: cardBackground }]}>
-          <View style={[styles.avatarContainer, { backgroundColor: tintColor }]}>
-            <Ionicons name="person" size={48} color="#fff" />
-          </View>
+        <Card variant="elevated" style={styles.header}>
+          <Avatar
+            name={user?.name || 'Usuario'}
+            size="xl"
+            style={styles.avatar}
+          />
           <ThemedText type="title" style={styles.userName}>
             {user?.name || 'Usuario'}
           </ThemedText>
           <ThemedText style={styles.userEmail}>
             {user?.email || 'email@example.com'}
           </ThemedText>
-          <TouchableOpacity
-            style={[styles.editButton, { borderColor: tintColor }]}
+          <Button
+            title="Editar perfil"
+            variant="outline"
+            size="sm"
             onPress={handleEditProfile}
-          >
-            <Ionicons name="pencil" size={16} color={tintColor} />
-            <ThemedText style={[styles.editButtonText, { color: tintColor }]}>
-              Editar perfil
-            </ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+            icon={<Ionicons name="pencil" size={16} color={tintColor} />}
+            style={{ marginTop: Spacing.md }}
+          />
+        </Card>
 
         {/* Información del perfil */}
         <ThemedView style={styles.section}>
@@ -101,33 +103,31 @@ export default function ProfileScreen() {
             Información
           </ThemedText>
           
-          <TouchableOpacity
-            style={[styles.infoCard, { backgroundColor: cardBackground, borderColor }]}
-            onPress={handleEditProfile}
-          >
-            <View style={styles.infoRow}>
-              <Ionicons name="person-outline" size={24} color={textColor} />
-              <View style={styles.infoContent}>
-                <ThemedText style={styles.infoLabel}>Nombre completo</ThemedText>
-                <ThemedText style={styles.infoValue}>{user?.name || 'No especificado'}</ThemedText>
+          <Card variant="outlined" style={styles.infoCard}>
+            <TouchableOpacity onPress={handleEditProfile}>
+              <View style={styles.infoRow}>
+                <Ionicons name="person-outline" size={24} color={textColor} />
+                <View style={styles.infoContent}>
+                  <ThemedText style={styles.infoLabel}>Nombre completo</ThemedText>
+                  <ThemedText style={styles.infoValue}>{user?.name || 'No especificado'}</ThemedText>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={borderColor} />
               </View>
-              <Ionicons name="chevron-forward" size={20} color={borderColor} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </Card>
 
-          <TouchableOpacity
-            style={[styles.infoCard, { backgroundColor: cardBackground, borderColor }]}
-            onPress={handleEditProfile}
-          >
-            <View style={styles.infoRow}>
-              <Ionicons name="mail-outline" size={24} color={textColor} />
-              <View style={styles.infoContent}>
-                <ThemedText style={styles.infoLabel}>Email</ThemedText>
-                <ThemedText style={styles.infoValue}>{user?.email || 'No especificado'}</ThemedText>
+          <Card variant="outlined" style={styles.infoCard}>
+            <TouchableOpacity onPress={handleEditProfile}>
+              <View style={styles.infoRow}>
+                <Ionicons name="mail-outline" size={24} color={textColor} />
+                <View style={styles.infoContent}>
+                  <ThemedText style={styles.infoLabel}>Email</ThemedText>
+                  <ThemedText style={styles.infoValue}>{user?.email || 'No especificado'}</ThemedText>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={borderColor} />
               </View>
-              <Ionicons name="chevron-forward" size={20} color={borderColor} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </Card>
         </ThemedView>
 
         {/* Ajustes */}
@@ -136,7 +136,7 @@ export default function ProfileScreen() {
             Ajustes
           </ThemedText>
           
-          <View style={[styles.settingCard, { backgroundColor: cardBackground, borderColor }]}>
+          <Card variant="outlined" style={styles.settingCard}>
             <View style={styles.settingRow}>
               <Ionicons name="notifications-outline" size={24} color={textColor} />
               <View style={styles.settingContent}>
@@ -152,9 +152,9 @@ export default function ProfileScreen() {
                 thumbColor="#fff"
               />
             </View>
-          </View>
+          </Card>
 
-          <View style={[styles.settingCard, { backgroundColor: cardBackground, borderColor }]}>
+          <Card variant="outlined" style={styles.settingCard}>
             <View style={styles.settingRow}>
               <Ionicons name="moon-outline" size={24} color={textColor} />
               <View style={styles.settingContent}>
@@ -170,44 +170,46 @@ export default function ProfileScreen() {
                 thumbColor="#fff"
               />
             </View>
-          </View>
+          </Card>
 
-          <TouchableOpacity
-            style={[styles.settingCard, { backgroundColor: cardBackground, borderColor }]}
-            onPress={handleChangePassword}
-          >
-            <View style={styles.settingRow}>
-              <Ionicons name="lock-closed-outline" size={24} color={textColor} />
-              <View style={styles.settingContent}>
-                <ThemedText style={styles.settingLabel}>Cambiar contraseña</ThemedText>
-                <ThemedText style={styles.settingDescription}>
-                  Actualiza tu contraseña de acceso
-                </ThemedText>
+          <Card variant="outlined" style={styles.settingCard}>
+            <TouchableOpacity onPress={handleChangePassword}>
+              <View style={styles.settingRow}>
+                <Ionicons name="lock-closed-outline" size={24} color={textColor} />
+                <View style={styles.settingContent}>
+                  <ThemedText style={styles.settingLabel}>Cambiar contraseña</ThemedText>
+                  <ThemedText style={styles.settingDescription}>
+                    Actualiza tu contraseña de acceso
+                  </ThemedText>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={borderColor} />
               </View>
-              <Ionicons name="chevron-forward" size={20} color={borderColor} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </Card>
         </ThemedView>
+
+        <Divider spacing="lg" />
 
         {/* Acciones */}
         <ThemedView style={styles.section}>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: tintColor }]}
+          <Button
+            title="Cerrar sesión"
+            variant="primary"
+            size="lg"
+            fullWidth
             onPress={handleLogout}
-          >
-            <Ionicons name="log-out-outline" size={24} color="#fff" />
-            <ThemedText style={styles.actionButtonText}>Cerrar sesión</ThemedText>
-          </TouchableOpacity>
+            icon={<Ionicons name="log-out-outline" size={24} color="#fff" />}
+            style={{ marginBottom: Spacing.md }}
+          />
 
-          <TouchableOpacity
-            style={[styles.dangerButton, { borderColor: '#dc3545' }]}
+          <Button
+            title="Eliminar cuenta"
+            variant="danger"
+            size="lg"
+            fullWidth
             onPress={handleDeleteAccount}
-          >
-            <Ionicons name="trash-outline" size={24} color="#dc3545" />
-            <ThemedText style={[styles.dangerButtonText, { color: '#dc3545' }]}>
-              Eliminar cuenta
-            </ThemedText>
-          </TouchableOpacity>
+            icon={<Ionicons name="trash-outline" size={24} color="#fff" />}
+          />
         </ThemedView>
 
         {/* Footer info */}
@@ -226,66 +228,41 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 60,
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.xl,
   },
   header: {
     alignItems: 'center',
-    padding: 24,
-    borderRadius: 16,
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
-  avatarContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+  avatar: {
+    marginBottom: Spacing.md,
   },
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
   userEmail: {
     fontSize: 14,
     opacity: 0.7,
-    marginBottom: 16,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 6,
-  },
-  editButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   section: {
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.xs,
   },
   infoCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
-    overflow: 'hidden',
+    marginBottom: Spacing.sm,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    gap: Spacing.md,
   },
   infoContent: {
     flex: 1,
@@ -300,16 +277,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   settingCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
-    overflow: 'hidden',
+    marginBottom: Spacing.sm,
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    gap: Spacing.md,
   },
   settingContent: {
     flex: 1,
@@ -323,37 +296,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.6,
   },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 8,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  dangerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 8,
-  },
-  dangerButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   footerText: {
     textAlign: 'center',
     fontSize: 12,
     opacity: 0.5,
-    marginTop: 16,
+    marginTop: Spacing.md,
   },
 });
