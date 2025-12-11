@@ -1,9 +1,29 @@
 {
   "name": "expo-base-app",
-  "main": "expo-router/entry",
   "version": "1.0.0",
+  "description": "🚀 Template profesional de React Native + Expo con autenticación, servicios API, componentes UI reutilizables y sistema de diseño completo",
+  "main": "expo-router/entry",
+  "keywords": [
+    "react-native",
+    "expo",
+    "template",
+    "starter",
+    "boilerplate",
+    "typescript",
+    "authentication",
+    "ui-components",
+    "design-system",
+    "expo-router"
+  ],
+  "author": "Reiduarig",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Reiduarig/expo-base-app.git"
+  },
+  "license": "MIT",
   "scripts": {
     "start": "expo start",
+    "setup": "node ./scripts/setup-project.js",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
