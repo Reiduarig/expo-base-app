@@ -1,25 +1,20 @@
-import * as SecureStore from 'expo-secure-store';
+import { APP_CONFIG } from '@/config/constants';
+import { authService } from '@/services/auth.service';
+import { User } from '@/types/user.types';
+import { logger } from '@/utils/logger';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isProcessing: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const AUTH_USER_KEY = 'auth_user';
-const AUTH_TOKEN_KEY = 'auth_token';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -33,12 +28,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadStoredUser = async () => {
     try {
-      const storedUser = await SecureStore.getItemAsync(AUTH_USER_KEY);
+      const storedUser = await authService.getStoredUser();
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        setUser(storedUser);
+        
+        // Verificar si el token está por expirar y renovarlo
+        const isExpiring = await authService.isTokenExpiringSoon();
+        if (isExpiring) {
+          logger.info('Token próximo a expirar, renovando...');
+          try {
+            await authService.refreshToken();
+            logger.info('Token renovado automáticamente');
+          } catch (error) {
+            logger.error('Error al renovar token automáticamente:', error);
+            // Si falla la renovación, cerrar sesión
+            await authService.clearAuth();
+            setUser(null);
+          }
+        }
       }
     } catch (error) {
-      console.error('Error al cargar usuario:', error);
+      logger.error('Error al cargar usuario:', error);
     } finally {
       setIsLoading(false);
     }
@@ -48,28 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsProcessing(true);
       
-      // Simulación de llamada API - Reemplazar con tu API real
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Las validaciones ya se hicieron en el formulario
-      // Aquí solo validaciones críticas de seguridad
+      // Validaciones críticas de seguridad
       if (!email || !password) {
-        throw new Error('Credenciales incompletas');
+        throw new Error(APP_CONFIG.ERRORS.INVALID_CREDENTIALS);
       }
 
-      // Usuario de ejemplo - Reemplazar con respuesta de API
-      const userData: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0],
-      };
-
-      // Guardar token y usuario de forma segura
-      const token = 'demo_token_' + Date.now(); // Reemplazar con token real de API
-      await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-      await SecureStore.setItemAsync(AUTH_USER_KEY, JSON.stringify(userData));
-      setUser(userData);
+      // Llamar al servicio de autenticación
+      const { user } = await authService.login({ email, password });
+      setUser(user);
+      
+      logger.info('Login exitoso desde contexto');
     } catch (error) {
+      logger.error('Error en login desde contexto:', error);
       throw error;
     } finally {
       setIsProcessing(false);
@@ -80,28 +80,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsProcessing(true);
       
-      // Simulación de llamada API - Reemplazar con tu API real
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Las validaciones ya se hicieron en el formulario
-      // Aquí solo validaciones críticas de seguridad
+      // Validaciones críticas de seguridad
       if (!email || !password || !name) {
         throw new Error('Datos incompletos');
       }
 
-      // Usuario de ejemplo - Reemplazar con respuesta de API
-      const userData: User = {
-        id: Date.now().toString(),
-        email,
-        name,
-      };
-
-      // Guardar token y usuario de forma segura
-      const token = 'demo_token_' + Date.now(); // Reemplazar con token real de API
-      await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-      await SecureStore.setItemAsync(AUTH_USER_KEY, JSON.stringify(userData));
-      setUser(userData);
+      // Llamar al servicio de autenticación
+      const { user } = await authService.register({ email, password, name });
+      setUser(user);
+      
+      logger.info('Registro exitoso desde contexto');
     } catch (error) {
+      logger.error('Error en registro desde contexto:', error);
       throw error;
     } finally {
       setIsProcessing(false);
@@ -110,11 +100,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await SecureStore.deleteItemAsync(AUTH_USER_KEY);
-      await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+      await authService.logout();
       setUser(null);
+      logger.info('Logout exitoso desde contexto');
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      logger.error('Error al cerrar sesión:', error);
       throw error;
     }
   };
@@ -125,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: !!user,
+        isProcessing,
         login,
         logout,
         register,
